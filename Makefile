@@ -2,7 +2,7 @@
 MODULE_PATH=template
 
 # git options for release
-RELEASE_SPEC=template
+RELEASE_SPEC=digital-credentials
 RELEASE_REPO_BRANCH=main
 RELEASE_RESOURCES_BRANCH=main
 

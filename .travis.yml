@@ -1,0 +1,60 @@
+dist: focal
+language: python
+python:
+  - "3.12"
+sudo: false
+cache: pip
+# Handle git submodules yourself
+git:
+    submodules: false
+# install sshpass for deploying files
+addons:
+  apt:
+    packages:
+      # wkhtmltopdf dependencies
+      # - zlib
+      # - fontconfig
+      # - freetype
+      # - libX11
+      # - libXext
+      # - libXrender
+      # phantomjs dependencies
+      - build-essential
+      - chrpath
+      - libssl-dev
+      - libxft-dev
+      - libfreetype6
+      - libfreetype6-dev
+      - libfontconfig1
+      - libfontconfig1-dev
+      # other programs
+      - ghostscript
+      - zip
+  ssh_known_hosts:
+    - ssh.fidoalliance.org
+# Use sed to replace the SSH URL with the public URL, then initialize submodules
+before_install:
+  - ssh-keyscan -H ssh.fidoalliance.org >> ~/.ssh/known_hosts
+
+  - sed -i 's/https:\/\/github.com\/\(.*\)/git@github.com:\1.git/' .gitmodules
+  - git submodule update --init --recursive
+  # install wkhtmltopdf the hard way to get the right version
+  - wget https://github.com/wkhtmltopdf/wkhtmltopdf/releases/download/0.12.4/wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+  - tar xf wkhtmltox-0.12.4_linux-generic-amd64.tar.xz
+  - export PATH=`pwd`/wkhtmltox/bin:$PATH
+  - echo $PATH
+  - wkhtmltopdf --version
+  # install phantomjs the hard way to get the right version
+  - wget https://github.com/Medium/phantomjs/releases/download/v2.1.1/phantomjs-2.1.1-linux-x86_64.tar.bz2
+  - tar xvjf phantomjs-2.1.1-linux-x86_64.tar.bz2
+  - export PATH=`pwd`/phantomjs-2.1.1-linux-x86_64/bin:$PATH
+  - echo $PATH
+  - phantomjs --version
+install:
+  - pip install --upgrade setuptools
+  - pip install pygments cssselect html5lib lxml
+  - pip install bikeshed
+  - bikeshed update
+script: 'make release'
+after_success:
+  - 'make deploy'

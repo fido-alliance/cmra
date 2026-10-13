@@ -1,0 +1,6 @@
+release
+.tmp
+.DS_Store
+.vscode
+*.include
+biblio.json

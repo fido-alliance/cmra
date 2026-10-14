@@ -1,19 +1,20 @@
 <pre class='metadata'>
-Title: Document Template 
+Title: Credential Manager Reference Architecture
 Prepare for TR: false
 TR:
-ED: 
+ED:
 Status: WD
-URL: 
-Previous Version: 
-Shortname: tmpl
+URL:
+Previous Version:
+Shortname: cmra
 Level: 1
 group: fido
-Issue Tracking: Github https://github.com/fido-alliance/wg-repo-template
+Issue Tracking: Github https://github.com/fido-alliance/verifier-id/issues
 Abstract: Template repository for working group projects. Create a copy of this repo to get started with a new doc authored in Bikeshed (.bs).
 Local Boilerplate: header yes, status yes, logo yes, copyright yes
 Boilerplate: omit conformance, omit feedback-header, omit abstract-header
 Markup Shorthands: css off, markdown on
+Favicon: resources/favicon.png
 </pre>
 
 # Introduction # {#intro}

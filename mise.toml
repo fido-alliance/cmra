@@ -1,0 +1,25 @@
+[settings]
+python.uv_venv_auto = "create|source"
+lockfile = true
+
+[tools]
+uv = "0.11.28"
+
+[tasks.deps]
+description = "Install dependencies into a local virtual environment"
+run = "uv sync"
+
+[tasks.setup]
+description = "Update bikeshed"
+depends = ["deps"]
+run = "uv run -m bikeshed update"
+
+[tasks."build"]
+description = "Render ./cmra.bs to ./cmra.html"
+depends = ["deps"]
+run = "uv run -m bikeshed spec cmra.bs"
+
+[tasks."serve"]
+description = "Watch for changes to ./cmra.bs, and view it at http://localhost:8000/cmra.html"
+depends = ["deps"]
+run = "uv run -m bikeshed serve cmra.bs"

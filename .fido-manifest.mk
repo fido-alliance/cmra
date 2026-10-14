@@ -1,4 +1,4 @@
-BIKESHED_FILES+=template_doc.bs
+BIKESHED_FILES+=cmra.bs
 CP_FILES=$(wildcard img/*.png)
 
 release: bikeshed-files copy-files

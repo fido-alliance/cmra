@@ -18,3 +18,6 @@ contact_links:
   - name: Is this a question or item about passkeys?
     url: https://github.com/orgs/passkeydeveloper/discussions
     about: Create a post in passkey developer discussions.
+  - name: Who is the FIDO Alliance?
+    url: https://fidoalliance.org/
+    about: Learn more about the FIDO Alliance.

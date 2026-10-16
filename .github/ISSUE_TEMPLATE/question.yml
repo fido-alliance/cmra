@@ -10,6 +10,5 @@ body:
     attributes:
       label: Detailed Question
       description: Ask your question in detail.
-      placeholder: ""
     validations:
       required: true

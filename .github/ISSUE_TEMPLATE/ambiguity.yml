@@ -10,7 +10,6 @@ body:
     attributes:
       label: Issue Details
       description: Describe the ambiguity or clarification required.
-      placeholder: ""
     validations:
       required: true
   - type: checkboxes

@@ -1,8 +1,8 @@
 # folder on drafts.fidoalliance.org
-MODULE_PATH=template
+MODULE_PATH=cmra
 
 # git options for release
-RELEASE_SPEC=digital-credentials
+RELEASE_SPEC=cmra
 RELEASE_REPO_BRANCH=main
 RELEASE_RESOURCES_BRANCH=main
 

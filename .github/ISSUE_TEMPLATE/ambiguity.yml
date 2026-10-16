@@ -1,0 +1,22 @@
+name: "Spec Ambiguity / Clarification Required"
+description: File an issue related to a specification ambiguity or clarification required.
+title: "[ambiguity] "
+labels: ["ambiguity", "triage"]
+assignees: []
+type: task
+body:
+  - type: textarea
+    id: issue-body
+    attributes:
+      label: Issue Details
+      description: Describe the ambiguity or clarification required.
+      placeholder: ""
+    validations:
+      required: true
+  - type: checkboxes
+    id: willing-to-pr
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to submit a pull request for this
+          required: false

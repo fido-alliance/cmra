@@ -1,0 +1,15 @@
+name: "General Question"
+description: Ask a general question.
+title: "[question] "
+labels: ["question", "triage"]
+assignees: []
+type: task
+body:
+  - type: textarea
+    id: issue-body
+    attributes:
+      label: Detailed Question
+      description: Ask your question in detail.
+      placeholder: ""
+    validations:
+      required: true

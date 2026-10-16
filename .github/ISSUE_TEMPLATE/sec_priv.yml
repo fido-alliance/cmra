@@ -1,0 +1,22 @@
+name: "Security or Privacy Concern"
+description: File an issue related to a security or privacy concern.
+title: "[secpriv] "
+labels: ["sec-priv", "triage"]
+assignees: []
+type: task
+body:
+  - type: textarea
+    id: issue-body
+    attributes:
+      label: Issue Details
+      description: Provide a detailed description of the issue.
+      placeholder: "Describe the security or privacy concern."
+    validations:
+      required: true
+  - type: checkboxes
+    id: willing-to-pr
+    attributes:
+      label: Contribution
+      options:
+        - label: I'm willing to submit a pull request for this
+          required: false

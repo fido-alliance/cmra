@@ -1,0 +1,23 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Is this about the FIDO Verifier ID Framework?
+    url: https://github.com/fido-alliance/verifier-id/issues/new/choose
+    about: Create an issue in that repo instead.
+  - name: Is this about the Digital Credentials API?
+    url: https://github.com/w3c-fedid/digital-credentials/issues/new/choose
+    about: Create an issue in the W3C GitHub.
+  - name: Is this about OpenID for Verifiable Presentations?
+    url: https://github.com/openid/OpenID4VP/issues/new/choose
+    about: Create an issue in the OpenID Foundation GitHub.
+  - name: Is this about OpenID for Verifiable Credential Issuance?
+    url: https://github.com/openid/OpenID4vci/issues/new/choose
+    about: Create an issue in the OpenID Foundation GitHub.
+  - name: Is this about the Digital Credentials Harmonized Protocol?
+    url: https://github.com/openid/dchp/issues/new/choose
+    about: Create an issue in the OpenID Foundation GitHub.
+  - name: Is this a question or item about passkeys?
+    url: https://github.com/orgs/passkeydeveloper/discussions
+    about: Create a post in passkey developer discussions.
+  - name: Who is the FIDO Alliance?
+    url: https://fidoalliance.org/
+    about: Learn more about the FIDO Alliance.

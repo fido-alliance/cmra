@@ -1,5 +1,5 @@
 BIKESHED_FILES+=cmra.bs
-CP_FILES=$(wildcard img/*.png)
+CP_FILES=$(wildcard img/*.png img/*.svg)
 
 release: bikeshed-files copy-files
 

@@ -9,14 +9,412 @@ Previous Version:
 Shortname: cmra
 Level: 1
 group: fido
-Issue Tracking: Github https://github.com/fido-alliance/verifier-id/issues
-Abstract: Template repository for working group projects. Create a copy of this repo to get started with a new doc authored in Bikeshed (.bs).
+No Editor: true
+Issue Tracking: Github https://github.com/fido-alliance/cmra/issues
+Abstract: This specification defines a Reference Architecture for a Credential Manager application eligible for FIDO certification. A Credential Manager, often informally referred to as a digital wallet, is the formal term used throughout this document to describe an application that holds and presents Digital Credentials. This document defines a set of requirements that a Credential Manager must implement to obtain FIDO certification, and is intended to serve as a blueprint for a baseline implementation of a general-purpose Credential Manager capabilities.
 Local Boilerplate: header yes, status yes, logo yes, copyright yes
 Boilerplate: omit conformance, omit feedback-header, omit abstract-header
-Markup Shorthands: css off, markdown on
+Markup Shorthands: css off, markdown on, macros-in-autolinks yes
 Favicon: resources/favicon.png
 </pre>
 
-# Introduction # {#intro}
+<pre class="biblio">
+{
+  "DC-API": {
+    "title": "Digital Credentials",
+    "href": "https://w3c-fedid.github.io/digital-credentials/",
+    "publisher": "W3C"
+  },
+  "FIDO-CTAP": {
+    "title": "Client to Authenticator Protocol (CTAP)",
+    "href": "https://fidoalliance.org/specs/fido-v2.2-ps-20250714/fido-client-to-authenticator-protocol-v2.2-ps-20250714.html",
+    "publisher": "FIDO Alliance"
+  },
+  "ISO-18013-5": {
+    "title": "Personal identification — ISO-compliant driving licence — Part 5: Mobile driving licence (mDL) application",
+    "href": "https://www.iso.org/standard/69084.html",
+    "publisher": "ISO/IEC",
+    "status": "International Standard",
+    "date": "September 2021"
+  },
+  "OMAPI": {
+    "title": "GlobalPlatform Device Technology: Open Mobile API Specification",
+    "href": "https://globalplatform.org/specs-library/",
+    "publisher": "GlobalPlatform"
+  },
+  "OpenID4VCI": {
+    "title": "OpenID for Verifiable Credential Issuance",
+    "href": "https://openid.net/specs/openid-4-verifiable-credential-issuance-1_0.html",
+    "publisher": "OpenID Foundation"
+  },
+  "OpenID4VP": {
+    "title": "OpenID for Verifiable Presentations",
+    "href": "https://openid.net/specs/openid-4-verifiable-presentations-1_0.html",
+    "publisher": "OpenID Foundation"
+  },
+  "SD-JWT-VC": {
+    "title": "SD-JWT-based Verifiable Credentials (SD-JWT VC)",
+    "href": "https://datatracker.ietf.org/doc/draft-ietf-oauth-sd-jwt-vc/",
+    "publisher": "IETF"
+  }
+}
+</pre>
 
-Template repository for working group projects. Create a copy of this repo to get started with a new doc authored in Bikeshed (.bs).
+# Introduction # {#sctn-intro}
+
+The FIDO Credential Manager Reference Architecture (CMRA) defines a standardized architecture for [=Credential Manager=] applications — commonly referred to as digital wallets — that are eligible for FIDO certification. A [=Credential Manager=] is a secure, user-controlled application that enables individuals (i.e., [=Holders|holders=]) to request [=Verifiable Digital Credentials|verifiable digital credentials=] from trusted [=Credential Issuers|issuers=], store those credentials on their device, and present them to [=Verifiers=], for use by [=Relying Parties=], in a manner that prioritizes privacy and security. As digital identity ecosystems mature and proliferate across jurisdictions, the need for a common reference architecture becomes critical. Without a shared baseline, implementations risk fragmentation, inconsistent security postures, and poor interoperability between [=Credential Issuers|credential issuers=], [=Holders|holders=], and [=Verifiers|verifiers=].
+
+This specification addresses that gap by establishing a set of requirements and architectural patterns that a [=Credential Manager=] MUST implement to obtain FIDO certification. It serves as a blueprint for a general-purpose [=Credential Manager=] capable of holding and presenting Digital Credentials across a variety of use cases — from government-issued identity documents to age verification and professional [=Attestations|attestations=]. Specifically, this document serves three purposes:
+
+- **Explains the architecture:** It details the system components and their interactions, providing the context necessary to understand the certification requirements.
+- **Guides implementation:** It acts as a common reference for implementers building [=Credential Manager=] applications, defining the components, interfaces, protocols, and security posture required for conformance.
+- **Supports certification:** It establishes the criteria against which [=Credential Manager=] implementations will be evaluated during the FIDO certification process.
+
+The audience for this specification includes [=Credential Manager Providers|Credential Manager providers=] (wallet and app developers), [=Credential Issuers=], [=Verifiers=] seeking to verify credentials, conformity assessment bodies, and platform or device vendors whose infrastructure supports credential management operations.
+
+
+# Terminology and Definitions # {#sctn-terminology}
+<!-- Section owner: All authors as they write their sections -->
+
+The following terms are used throughout this specification:
+
+: <dfn>Attestation</dfn>
+:: A cryptographically verifiable statement about the properties of a component or entity in the ecosystem (e.g., a Wallet Attestation proving the authenticity of a [=Credential Manager=] instance).
+
+: <dfn>Credential Issuer</dfn>
+:: An entity that verifies attributes about a subject and issues signed credentials to a [=Credential Manager=] for storage.
+
+: <dfn>Credential Manager</dfn>
+:: An application installed on or accessible from a [=User Device=] that implements the core logic for requesting, storing, managing, and presenting Digital Credentials. Informally referred to as a wallet.
+
+: <dfn export>Credential Manager Attestation</dfn>
+:: A cryptographic proof issued by the [=Credential Manager Provider=] that attests to the authenticity and integrity of a [=Credential Manager=] instance, enabling [=Credential Issuers|Issuers=] and [=Relying Parties=] to verify they are communicating with a genuine application.
+
+: <dfn>Credential Manager Provider</dfn>
+:: The organization responsible for developing, distributing, and maintaining a [=Credential Manager=] application and its associated backend services.
+
+: <dfn>Holder</dfn>
+:: The [=User=] who possesses and controls one or more credentials within their [=Credential Manager=].
+
+: <dfn>Presentation</dfn>
+:: The act of a [=Credential Manager=] transmitting one or more credentials (or selected attributes thereof) to a [=Relying Party=] in response to a verified request.
+
+: <dfn>Presentation Request</dfn>
+:: A message from a [=Verifier=] specifying the credentials or attributes it requires, along with metadata such as the [=Verifier=] and/or [=Relying Party|Relying Party's=] identity and the purpose of the request.
+
+: <dfn>Proximity Flow</dfn>
+:: A credential [=Presentation|presentation=] flow in which the [=User Device=] and the [=Verifier=] are physically co-located and exchange data over short-range communication technologies (e.g., NFC, BLE).
+
+: <dfn lt="Relying Party|RP">Relying Party</dfn> (<abbr>RP</abbr>)
+:: An entity that relies on the [=Presentation|presentation=] of credentials from a [=Credential Manager=] to make authorization or access control decisions.
+
+: <dfn>Remote Flow</dfn>
+:: A credential [=Presentation|presentation=] flow in which the [=Credential Manager=] and the [=Verifier=] communicate over the internet, either on the same device or across devices.
+
+: <dfn lt="Secure Cryptographic Application|SCA">Secure Cryptographic Application</dfn> (<abbr>SCA</abbr>)
+:: An application or interface layer that manages critical cryptographic assets by interfacing with the [=Secure Cryptographic Device=].
+
+: <dfn lt="Secure Cryptographic Device|SCD">Secure Cryptographic Device</dfn> (<abbr>SCD</abbr>)
+:: A tamper-resistant device or environment that is linked to and used by the [=Credential Manager=] through the [=Secure Cryptographic Application=] to protect critical cryptographic assets (e.g., private keys) and to securely execute cryptographic functions.
+
+: <dfn>Selective Disclosure</dfn>
+:: A capability allowing a [=User=] to present only a subset of the attributes contained in a credential, rather than the full credential payload.
+
+: <dfn>User</dfn>
+:: A natural person who installs, controls, and operates a [=Credential Manager=] to manage and present their Digital Credentials.
+
+: <dfn>User Device</dfn>
+:: The hardware, operating system, and software environment on which a [=Credential Manager=] instance is hosted and executed.
+
+: <dfn>Verifiable Digital Credential</dfn>
+:: A set of attributes about a subject, digitally signed by a [=Credential Issuer=], cryptographically bound to a device, held within a [=Credential Manager=], that conforms to a recognized credential format (e.g., mdoc [[ISO-18013-5]], SD-JWT VC [[SD-JWT-VC]]).
+
+: <dfn>Verifier</dfn>
+:: An entity that receives and cryptographically validates credentials or [=Presentations|presentations=] from a [=Credential Manager=]. Often synonymous with [=Relying Party=] in [=Presentation|presentation=] flows, but is a discrete entity/component.
+
+
+# Conformance # {#sctn-conformance}
+
+As well as sections marked as non-normative, all authoring guidelines, diagrams, examples, and notes in this specification are non-normative. Everything else in this specification is normative.
+
+The key words _MUST_, _MUST NOT_, _REQUIRED_, _SHALL_, _SHALL NOT_, _SHOULD_, _SHOULD NOT_, _RECOMMENDED_, _MAY_, and _OPTIONAL_ in this document are to be interpreted as described in [[!RFC2119]].
+
+
+# High Level Architecture # {#sctn-high-level-architecture}
+
+## Introduction ## {#high-level-arch-intro}
+
+_This section provides a broad overview of the [=Credential Manager=] ecosystem's core components, their interfaces, and the overall design principles. It is structured as follows:_
+
+- [[#design-principles]] discusses the design principles that guide the architecture described in this specification.
+- [[#reference-architecture]] presents an overview of the ecosystem's architecture, focusing on the components that make up a [=Credential Manager=] and the interfaces between a [=Credential Manager=] and other entities, as well as the protocols used on these interfaces.
+- [[#credential-presentation-flows]] discusses the different credential [=Presentation|presentation=] flows enabled by this architecture, including mechanisms for both proximity and remote [=Presentation|presentation=].
+- [[#scd-architecture-types]] discusses the different architecture types that may be used to implement a [=Secure Cryptographic Device=] within a [=Credential Manager=].
+- [[#state-diagrams]] presents state diagrams for the main entities and components in the ecosystem.
+
+## Design Principles ## {#design-principles}
+
+_This section establishes the design principles that guide this Reference Architecture, ensuring the resulting ecosystem is user-centric, accessible, interoperable, private, and secure by design._
+
+### User-Centricity ### {#user-centricity}
+
+The [=Verifiable Digital Credentials=] (VDC) ecosystem prioritizes user-centricity as a core design principle. This means placing user needs and experience at the forefront of every design decision. The [=Credential Manager=] SHOULD be intuitive and easy to use, with seamless integration into existing identity verification use cases. [=Users=] MUST be able to exercise control over their credentials — including the ability to view, present, and delete them — with transparent information about what attributes are being shared and with whom, to include logs, accessible only to the [=Holder|holder=], that detail credential sharing transactions.
+
+The [=Credential Manager=] MUST make it straightforward for [=Users=] to understand the implications of a [=Presentation Request|presentation request=] before they authorize the sharing of attributes. This includes clearly communicating the identity of the requesting [=Verifier=] and/or [=Relying Party=], the specific attributes being requested, and the purpose of the request where available. Additionally, the [=Credential Manager=] SHOULD be accessible and inclusive, catering to users with varying technical backgrounds and abilities. By prioritizing user-centricity, the FIDO [=Credential Manager=] ecosystem fosters trust and encourages widespread adoption, ultimately empowering [=Users=] with secure and convenient digital credential management.
+
+### Accessibility ### {#accessibility}
+
+Accessibility of all user-facing components in the [=Credential Manager=] ecosystem — including the [=Credential Manager=] application itself, enrollment and issuance interfaces, and credential [=Presentation|presentation=] interfaces — is essential to ensure these digital tools are inclusive by design. Accessibility is not only a matter of regulatory compliance but also a fundamental condition for equal access, user trust, and widespread adoption across all segments of the population, including persons with disabilities.
+
+[=Credential Managers=] and related user-facing components SHOULD align with applicable accessibility standards, such as the W3C Web Content Accessibility Guidelines [[WCAG22]] and platform-specific accessibility APIs (e.g., iOS VoiceOver, Android TalkBack). It is crucial that accessibility is integrated into:
+
+- Technical specifications and protocol design
+- User interface design and interaction patterns
+- Testing processes and conformance criteria
+- Procurement and certification requirements
+
+Implementers SHOULD ensure ongoing monitoring, effective feedback mechanisms, and continuous improvement of accessibility practices. This requires collaboration with users, accessibility experts, and organizations representing persons with disabilities, to guarantee that [=Credential Manager=] applications remain usable, effective, and inclusive for all.
+
+#### Requirements #### {#accessibility-requirements}
+
+: **Issuance - Issuing Entity**
+:: The [=Credential Manager=] MUST present to the [=User|user=] who the issuing entity is when an issuance process is initiated.
+
+: **Issuance - Consent**
+:: The [=Credential Manager=] MUST capture the [=User|user's=] consent prior to conveying any information (e.g., biometrics, document images, attributes) to the [=Credential Issuer|issuer=] during an issuance process.
+
+: **Issuance - Notice**
+:: The [=Credential Manager=] MUST provide notice and plain language information about the issuance processes that occur within the [=Credential Manager=] user interface. Where the [=Credential Issuer|issuer=] makes such information available, the [=Credential Manager=] MUST provide the [=User|user=] with information about alternative methods available to them during the issuance process (e.g., accessibility options, alternative verification paths). The [=Credential Manager=] SHOULD provide information prior to initiating the issuance process about the documents, steps, and information that will be required to complete the issuance steps that are executed within the [=Credential Manager=] user interface.
+
+: **Presentation - Purpose**
+:: The [=Credential Manager=] MUST convey the purpose of the credential request to the [=User|user=] if the [=Relying Party=] and [=Presentation|presentation=] protocols provide it.
+
+: **Presentation - Attribute Display**
+:: The [=Credential Manager=] MUST display to the [=User|user=] all the attributes that have been requested by the [=Relying Party=].
+
+: **Presentation - Consent**
+:: The [=Credential Manager=] MUST acquire consent from the [=User|user=] prior to the [=Presentation|presentation=] of any attributes to the [=RP=]. The consent step MUST require active user engagement and MUST be done prior to user authentication/verification to release the attributes.
+
+: **Transaction History**
+:: The [=Credential Manager=] MUST provide the [=User|user=] with a transaction log that indicates which credentials and attributes they have presented, to what [=Relying Parties|relying parties=], and when. This transaction log MUST be available only to the [=User|user=]. The [=Credential Manager=] MAY truncate this log in the user interface (e.g., based on recency or number of transactions) for ease of presentation, but MUST provide a means for the [=User|user=] to access the complete transaction history.
+
+: **Credential Deletion**
+:: The [=Credential Manager=] MUST provide the [=User|user=] with a means to delete stored credentials from their device. The deletion process SHOULD provide the [=User|user=] with a clear indication that the credential will no longer be usable once deleted and that the [=User|user=] may be required to go through a re-issuance process to regain access to the credential. This process MUST delete all traces of the credential from the [=User|user's=] device including any metadata that could reveal information about the deleted credential or its use, and, at the option of the [=User|user=], activity log information. The process MUST NOT require approval by the Issuing Authority and MUST be able to be completed while the [=User|user's=] device is offline.
+
+### Interoperability ### {#interoperability}
+<!-- Section owner: Rene Leveille -->
+
+<p class="issue">
+Placeholder: [=Credential Managers=] SHOULD function seamlessly across implementations, platforms, and jurisdictions, using standardized protocols so that any conformant [=Verifier=] can interact with any conformant [=Credential Manager=].
+</p>
+
+### Privacy by Design ### {#privacy-by-design}
+
+The [=Credential Manager=] architecture embodies the principle of privacy by design. The protection of user data is a fundamental pillar of the architecture, not an afterthought. The following privacy principles guide the design:
+
+- **Data Minimization:** The architecture ensures that [=Relying Parties=] can request and receive only the specific attributes they need to fulfill a transaction. [=Credential Managers=] MUST NOT transmit attributes beyond those explicitly authorized by the [=User=] for a given [=Presentation|presentation=].
+- **[=Selective Disclosure=]:** The [=Credential Manager=] empowers [=Users=] with control over what data is presented. Where credential formats support it, [=Users=] SHOULD be able to disclose individual attributes or subsets of attributes from a credential rather than presenting the entire credential payload.
+- **Transparency:** The [=Credential Manager=] MUST provide clear explanations to [=Users=] about what data is being requested, by whom, and for what stated purpose. To the extent that [=Verifier|verifier=] requests enable it, [=Credential Managers=] MUST notify the [=User|user=] of what attributes are mandatory or optional for a given transaction. [=Credential Managers=] MUST NOT present any credentials without the explicit consent of the [=User=].
+
+<p class="issue">
+Are we allowing mandatory vs. optional attribute requests? Need to confirm whether Users can deselect attributes they do not want to share or whether mandatory vs. optional attributes exist in this model (to minimize data, verifiers request what they need rather than optional attributes).
+</p>
+
+- **Unlinkability:** [=Verifiable Digital Credentials=], if not implemented with appropriate measures, could be misused to track users across [=Relying Parties=], [=Credential Issuers=], or other ecosystem participants. [=Credential Managers=] SHOULD support mechanisms that prevent colluding parties from correlating a [=User|User's=] activities across transactions. Examples of such mechanisms can include batch issuance, one-time-use [=Presentations|presentations=], or cryptographic unlinkability techniques.
+
+<p class="issue">
+Do we want to make a privacy risk assessment a requirement, and is this the place to do that?
+</p>
+
+By making privacy a cornerstone from the beginning, the FIDO [=Credential Manager=] ecosystem aims to foster trust and protect the fundamental rights of its [=Users=].
+
+### Security by Design ### {#security-by-design}
+<!-- Section owner: Rene Leveille -->
+
+<p class="issue">
+Placeholder: Security considerations SHOULD be embedded throughout the architecture, minimizing attack surfaces and mandating secure implementation practices.
+</p>
+
+## Reference Architecture ## {#reference-architecture}
+
+### Overview ### {#reference-architecture-overview}
+
+<p class="issue">
+Placeholder: High-level diagram and narrative description of the [=Credential Manager=] ecosystem, showing the [=Credential Manager=] and its interfaces to other entities (e.g., [=Credential Issuers=], [=Relying Parties=], and the underlying device/platform).
+</p>
+
+### Components of a Credential Manager ### {#components-of-credential-manager}
+<!-- Section owner: Juliana Cafik -->
+
+_The following are identified as the core components of a [=Credential Manager=]:_
+
+- **[=User Device=]** — The hardware, operating system, and software environment required to host and execute the [=Credential Manager=] instance.
+- **Credential Manager Instance** — The application installed on, or accessible from, a [=User Device=] that implements the core business logic and interfaces described in this document. It interacts with a [=Secure Cryptographic Application=] to manage critical assets and execute cryptographic functions.
+- **[=Secure Cryptographic Device=] (SCD)** — A tamper-resistant device or environment that protects critical assets (e.g., private keys) and securely executes cryptographic functions on behalf of the [=Credential Manager=].
+- **[=Secure Cryptographic Application=] (SCA)** — An application or interface layer that manages critical assets by interfacing with the [=Secure Cryptographic Device=].
+- **Keystore** — An optional hardware-backed repository used for non-critical cryptographic assets that do not require the assurance level provided by the [=SCD=].
+- **Credential Manager Provider Backend** — Backend infrastructure operated by the [=Credential Manager Provider|provider=] of the [=Credential Manager=] that supports provisioning, maintenance, and lifecycle management of [=Credential Manager=] instances.
+
+### Credential Manager Interfaces and Protocols ### {#interfaces-and-protocols}
+
+- **Provider Interface** — Used by the [=Credential Manager=] instance to communicate with its [=Credential Manager Provider|Provider=] backend for provisioning, [=Attestation|attestation=] issuance, and maintenance.
+- **User Interface** — The point of interaction between the [=User=] and the [=Credential Manager=] instance.
+- **Presentation Interface** — Enables [=Relying Parties=] to securely request and receive credentials from a [=Credential Manager=], across both proximity and remote interactions.
+- **Secure Cryptographic Interface** — Enables the [=Credential Manager=] to communicate with the [=Secure Cryptographic Application=] to manage cryptographic assets and execute cryptographic functions.
+- **SCA–SCD Interface** — Enables the [=Secure Cryptographic Application=] to communicate with the [=Secure Cryptographic Device=].
+- **Issuance Interface** — Used by the [=Credential Manager=] to request and receive credentials from a [=Credential Issuer=].
+
+The following diagram illustrates the [=Credential Manager=] components and their interfaces:
+
+<!--
+Mermaid source for img/cmra-interfaces.svg:
+
+graph TD
+    %% External entities
+    Backend["Credential Manager<br>Provider Backend"]
+    User(["User"])
+    Issuer["Credential Issuer"]
+    RP["Relying Party"]
+
+    %% User Device boundary
+    subgraph UserDevice["User Device"]
+        CMI["Credential Manager Instance<br><i>Credential Storage · Presentation Logic · Crypto Operations</i>"]
+        SCA["Secure Cryptographic<br>Application (SCA)"]
+        SCD["Secure Cryptographic<br>Device (SCD)"]
+    end
+
+    %% Interfaces
+    Backend -- "Provider Interface<br><i>Provisioning, Wallet Attestations,<br>Maintenance</i>" --> CMI
+    User -- "User Interface<br><i>Display, Consent, Controls</i>" --> CMI
+    CMI -- "Issuance Interface<br><i>OpenID4VCI</i>" --> Issuer
+    CMI -- "Presentation Interface<br><i>OpenID4VP / ISO 18013-5</i>" --> RP
+    CMI -- "Secure Cryptographic<br>Interface" --> SCA
+    SCA -- "SCA–SCD Interface" --> SCD
+-->
+<figure id="fig-cmra-interfaces">
+  <img src="img/cmra-interfaces.svg" width="1120" height="600" style="max-width: 100%; height: auto;" alt="Architecture diagram illustrating the Credential Manager Instance, SCA, and SCD inside the User Device, connected via interfaces to the Provider Backend, User, Credential Issuer, and Relying Party.">
+  <figcaption>[=Credential Manager=] Components and Interfaces</figcaption>
+</figure>
+
+The following describes the purpose, scope, and relevant protocols for each interface:
+
+: **Provider Interface**
+:: The Provider Interface is used by the [=Credential Manager=] Instance to communicate with the Credential Manager Provider Backend. This interface supports provisioning of the [=Credential Manager=] Instance, issuance of [=Credential Manager Attestations|Wallet Attestations=] (proving the authenticity of the [=Credential Manager=] to [=Credential Issuers|issuers=] and [=Verifiers|verifiers=]), managing credential lifecycles, and ongoing maintenance. Because the [=Credential Manager Provider=] controls both sides of this interface, it is not required to be standardized across the ecosystem — however, the behaviors and security properties it exhibits are subject to certification requirements.
+
+: **User Interface**
+:: The User Interface is the point of interaction and communication between the [=User=] and the [=Credential Manager=] Instance. It encompasses all user-facing screens, notifications, consent flows, and credential management views. While this interface will not be standardized at a protocol level, it MUST satisfy the user-centricity and accessibility principles defined in [[#user-centricity]] and [[#accessibility]] and is subject to usability review during certification.
+
+: **Presentation Interface**
+:: The Presentation Interface enables [=Relying Party=] Instances to securely request and receive credentials from a [=Credential Manager=]. This interface accommodates both [=Proximity Flows|proximity=] and [=Remote Flows|remote=] interactions:
+
+    - For [=Proximity Flows|proximity=] (supervised and unsupervised) [=Presentation|presentation=] flows (e.g., in-person identity verification), the [=Credential Manager=] implements protocols based on short-range communication technologies such as NFC or BLE, as specified in [[ISO-18013-5]].
+    - For [=Remote Flows|remote presentation flows=] (e.g., online authentication), the [=Credential Manager=] implements protocols such as [[OpenID4VP]], optionally mediated by a platform-level API like the W3C Digital Credentials API [[DC-API]].
+    - For cross-device [=Remote Flows|remote flows=], secure tunnel mechanisms (e.g., FIDO CTAP hybrid transport [[FIDO-CTAP]]) MAY be employed, with mandatory proximity checks to mitigate relay and phishing attacks.
+
+: **Secure Cryptographic Interface**
+:: The Secure Cryptographic Interface enables the [=Credential Manager=] Instance to communicate with the [=Secure Cryptographic Application=] (SCA) for managing cryptographic assets and executing cryptographic functions (e.g., signing credential [=Presentations|presentations=]). Where the [=SCA=] is delivered by the [=Credential Manager Provider=], both sides of this interface are under the provider's control. Where the [=SCA=] is delivered by the [=Secure Cryptographic Device=] (SCD) vendor, the interface will comply with existing specifications appropriate to the device type (e.g., GlobalPlatform OMAPI [[OMAPI]] for embedded secure elements).
+
+: **SCA–SCD Interface**
+:: The SCA–SCD Interface enables the [=Secure Cryptographic Application=] to communicate with the [=Secure Cryptographic Device=]. This interface is manufacturer-defined and specific to the [=SCD=] type (e.g., operating system syscalls for native secure enclaves, APDU commands for smart cards). The [=Credential Manager Provider=] is responsible for ensuring the correct implementation and security of this interface when the [=SCA=] is provider-managed.
+
+: **Issuance Interface**
+:: The Issuance Interface is used by the [=Credential Manager=] to request and receive credentials from a [=Credential Issuer=]. This interface complies with the OpenID for Verifiable Credential Issuance [[OpenID4VCI]] protocol, which defines a standardized flow for a [=Credential Manager=] to authenticate to an [=Credential Issuer|issuer=], prove possession of the relevant key material, and receive issued credentials for storage within the [=Credential Manager=].
+
+<p class="issue">
+Confirm whether the Issuance Interface is in scope for CMRA certification requirements.
+</p>
+
+## Credential Presentation Flows ## {#credential-presentation-flows}
+
+### Overview ### {#presentation-flows-overview}
+
+_This section defines distinct communication flows that may be used when a [=Credential Manager=] presents a credential to a [=Relying Party=]:_
+
+- **Proximity Supervised Flow** — The [=User=] and their device are physically near the [=Relying Party=], and credentials are exchanged using proximity technology (e.g., NFC or Bluetooth) under human supervision.
+- **Proximity Unsupervised Flow** — Similar to the supervised flow, but the credential is presented to a machine without human supervision.
+- **Remote Same-Device Flow** — The [=User=] accesses a [=Relying Party|Relying Party's=] service using a browser or application on the same device that hosts the [=Credential Manager=].
+- **Remote Cross-Device Flow** — The [=User=] accesses a [=Relying Party|Relying Party's=] service from a device other than the one hosting the [=Credential Manager=].
+
+### Proximity Presentation Flows ### {#proximity-presentation-flows}
+<!-- Section owner: Juliana Cafik -->
+
+<p class="issue">
+Placeholder: Describe how a [=Presentation|presentation=] flow is established over short-range communication technologies (e.g., NFC, BLE) when the [=Credential Manager=] and [=Relying Party=] are physically co-located.
+</p>
+
+### Remote Presentation Flows ### {#remote-presentation-flows}
+<!-- Section owner: Juliana Cafik -->
+
+<p class="issue">
+Placeholder: Describe the mechanisms used to establish a transmission channel between a [=Credential Manager=] and a remote [=Relying Party=], such as custom URI schemes or a platform-mediated credential API (e.g., an implementation of a Digital Credentials API [[DC-API]]), and the challenges (phishing, relay attacks, session binding, origin verification) that such flows MUST mitigate.
+</p>
+
+## Secure Cryptographic Device Architecture Types ## {#scd-architecture-types}
+<!-- Section owner: Rene Leveille -->
+
+<p class="issue">
+Placeholder: Expand descriptions of the possible architecture types for the [=Secure Cryptographic Device=].
+</p>
+
+- **Remote SCD** — A remote device, such as a Hardware Security Module (HSM), accessed over a network.
+- **Local External SCD** — An external device, such as a smart card or secure token, connected to the [=User Device=].
+- **Local Internal SCD** — A component embedded within the [=User Device=], such as a SIM, eSIM, or embedded Secure Element.
+- **Local Native SCD** — A component embedded in the [=User Device=] and accessed via an API provided by the operating system.
+
+## State Diagrams ## {#state-diagrams}
+<!-- Section owner: Juliana Cafik -->
+
+<p class="issue">
+Placeholder: State diagrams for the main entities and components in the ecosystem, including the [=Credential Manager=], credentials, and [=Relying Parties=], along with the conditions that trigger state transitions (e.g., issuance, expiry, revocation).
+</p>
+
+
+# Protocols # {#sctn-protocols}
+
+## Protocol Name ## {#protocol-template}
+
+<p class="issue">
+Define protocol specifications required for CMRA conformance.
+</p>
+
+- **Purpose:**
+- **Message flow:**
+- **Request / Response format:**
+- **Error handling:**
+
+
+# Optional Features # {#sctn-optional-features}
+
+## Feature Name ## {#optional-feature-template}
+
+<p class="issue">
+Define optional features supported by CMRA.
+</p>
+
+- **Description:**
+- **Applicability / when used:**
+- **Dependencies:**
+
+
+# Appendix # {#sctn-appendix}
+
+## Revision History ## {#revision-history}
+
+<table class="def">
+  <thead>
+    <tr>
+      <th>Version</th>
+      <th>Date</th>
+      <th>Author</th>
+      <th>Changes</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>0.1</td>
+      <td></td>
+      <td></td>
+      <td>Initial draft</td>
+    </tr>
+  </tbody>
+</table>

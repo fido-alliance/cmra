@@ -4,4 +4,5 @@ release
 .vscode
 *.include
 biblio.json
+*.html
 .venv/

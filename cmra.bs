@@ -11,7 +11,7 @@ Level: 1
 group: fido
 No Editor: true
 Issue Tracking: Github https://github.com/fido-alliance/cmra/issues
-Abstract: This specification defines a Reference Architecture for a Credential Manager application eligible for FIDO certification. A Credential Manager, often informally referred to as a digital wallet, is the formal term used throughout this document to describe an application that holds and presents Digital Credentials. This document defines a set of requirements that a Credential Manager must implement to obtain FIDO certification, and is intended to serve as a blueprint for a baseline implementation of a general-purpose Credential Manager capabilities.
+Abstract: This document defines a Reference Architecture for a Credential Manager application eligible for FIDO certification. A Credential Manager, often informally referred to as a digital wallet, is the formal term used throughout this document to describe an application that holds and presents Digital Credentials. This document defines a set of requirements that a Credential Manager must implement to obtain FIDO certification, and is intended to serve as a blueprint for a baseline implementation of a general-purpose Credential Manager capabilities.
 Local Boilerplate: header yes, status yes, logo yes, copyright yes
 Boilerplate: omit conformance, omit feedback-header, omit abstract-header
 Markup Shorthands: css off, markdown on, macros-in-autolinks yes
@@ -64,19 +64,19 @@ Favicon: resources/favicon.png
 
 The FIDO Credential Manager Reference Architecture (CMRA) defines a standardized architecture for [=Credential Manager=] applications — commonly referred to as digital wallets — that are eligible for FIDO certification. A [=Credential Manager=] is a secure, user-controlled application that enables individuals (i.e., [=Holders|holders=]) to request [=Verifiable Digital Credentials|verifiable digital credentials=] from trusted [=Credential Issuers|issuers=], store those credentials on their device, and present them to [=Verifiers=], for use by [=Relying Parties=], in a manner that prioritizes privacy and security. As digital identity ecosystems mature and proliferate across jurisdictions, the need for a common reference architecture becomes critical. Without a shared baseline, implementations risk fragmentation, inconsistent security postures, and poor interoperability between [=Credential Issuers|credential issuers=], [=Holders|holders=], and [=Verifiers|verifiers=].
 
-This specification addresses that gap by establishing a set of requirements and architectural patterns that a [=Credential Manager=] MUST implement to obtain FIDO certification. It serves as a blueprint for a general-purpose [=Credential Manager=] capable of holding and presenting Digital Credentials across a variety of use cases — from government-issued identity documents to age verification and professional [=Attestations|attestations=]. Specifically, this document serves three purposes:
+This document addresses that gap by establishing a set of requirements and architectural patterns that a [=Credential Manager=] MUST implement to obtain FIDO certification. It serves as a blueprint for a general-purpose [=Credential Manager=] capable of holding and presenting Digital Credentials across a variety of use cases — from government-issued identity documents to age verification and professional [=Attestations|attestations=]. Specifically, this document serves three purposes:
 
 - **Explains the architecture:** It details the system components and their interactions, providing the context necessary to understand the certification requirements.
 - **Guides implementation:** It acts as a common reference for implementers building [=Credential Manager=] applications, defining the components, interfaces, protocols, and security posture required for conformance.
 - **Supports certification:** It establishes the criteria against which [=Credential Manager=] implementations will be evaluated during the FIDO certification process.
 
-The audience for this specification includes [=Credential Manager Providers|Credential Manager providers=] (wallet and app developers), [=Credential Issuers=], [=Verifiers=] seeking to verify credentials, conformity assessment bodies, and platform or device vendors whose infrastructure supports credential management operations.
+The audience for this document includes [=Credential Manager Providers|Credential Manager providers=] (wallet and app developers), [=Credential Issuers=], [=Verifiers=] seeking to verify credentials, conformity assessment bodies, and platform or device vendors whose infrastructure supports credential management operations.
 
 
 # Terminology and Definitions # {#sctn-terminology}
 <!-- Section owner: All authors as they write their sections -->
 
-The following terms are used throughout this specification:
+The following terms are used throughout this document:
 
 : <dfn>Attestation</dfn>
 :: A cryptographically verifiable statement about the properties of a component or entity in the ecosystem (e.g., a Wallet Attestation proving the authenticity of a [=Credential Manager=] instance).
@@ -135,7 +135,7 @@ The following terms are used throughout this specification:
 
 # Conformance # {#sctn-conformance}
 
-As well as sections marked as non-normative, all authoring guidelines, diagrams, examples, and notes in this specification are non-normative. Everything else in this specification is normative.
+As well as sections marked as non-normative, all authoring guidelines, diagrams, examples, and notes in this document are non-normative. Everything else in this document is normative.
 
 The key words _MUST_, _MUST NOT_, _REQUIRED_, _SHALL_, _SHALL NOT_, _SHOULD_, _SHOULD NOT_, _RECOMMENDED_, _MAY_, and _OPTIONAL_ in this document are to be interpreted as described in [[!RFC2119]].
 
@@ -146,7 +146,7 @@ The key words _MUST_, _MUST NOT_, _REQUIRED_, _SHALL_, _SHALL NOT_, _SHOULD_, _S
 
 _This section provides a broad overview of the [=Credential Manager=] ecosystem's core components, their interfaces, and the overall design principles. It is structured as follows:_
 
-- [[#design-principles]] discusses the design principles that guide the architecture described in this specification.
+- [[#design-principles]] discusses the design principles that guide the architecture described in this document.
 - [[#reference-architecture]] presents an overview of the ecosystem's architecture, focusing on the components that make up a [=Credential Manager=] and the interfaces between a [=Credential Manager=] and other entities, as well as the protocols used on these interfaces.
 - [[#credential-presentation-flows]] discusses the different credential [=Presentation|presentation=] flows enabled by this architecture, including mechanisms for both proximity and remote [=Presentation|presentation=].
 - [[#scd-architecture-types]] discusses the different architecture types that may be used to implement a [=Secure Cryptographic Device=] within a [=Credential Manager=].

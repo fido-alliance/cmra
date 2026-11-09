@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1120 600" width="100%" role="img" aria-labelledby="cmra-fig-title cmra-fig-desc">
+  <title id="cmra-fig-title">Credential Manager Components and Interfaces</title>
+  <desc id="cmra-fig-desc">Architecture diagram showing a User Device containing the Credential Manager Instance, Secure Cryptographic Application (SCA), and Secure Cryptographic Device (SCD), along with interfaces to the Credential Manager Provider Backend, User, Credential Issuer, and Relying Party.</desc>
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .device-box { fill: #f8fafc; stroke: #475569; stroke-width: 2; stroke-dasharray: 7 5; rx: 12; }
+      .device-title { font: 700 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #1e293b; letter-spacing: 0.03em; }
+      .ext-node { fill: #fff7ed; stroke: #ea580c; stroke-width: 2; rx: 8; }
+      .user-node { fill: #eff6ff; stroke: #2563eb; stroke-width: 2; rx: 30; }
+      .int-node { fill: #ffffff; stroke: #0f172a; stroke-width: 2; rx: 8; }
+      .cmi-node { fill: #f0f9ff; stroke: #0284c7; stroke-width: 2.2; rx: 8; }
+      .node-title { font: 600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #0f172a; text-anchor: middle; }
+      .node-sub { font: italic 12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #334155; text-anchor: middle; }
+      .edge { stroke: #334155; stroke-width: 2; fill: none; }
+      .lbl-bg { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1; rx: 5; }
+      .lbl-title { font: 600 12.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #0f172a; text-anchor: middle; }
+      .lbl-sub { font: italic 11.5px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; fill: #475569; text-anchor: middle; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#334155"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas background for consistent contrast across light/dark modes and PDF output -->
+  <rect class="bg" x="0" y="0" width="1120" height="600" rx="10"/>
+
+  <!-- User Device Subgraph Boundary -->
+  <rect class="device-box" x="340" y="178" width="440" height="402" rx="12"/>
+  <text class="device-title" x="560" y="201" text-anchor="middle">User Device</text>
+
+  <!-- External Entities (Top) -->
+  <rect class="ext-node" x="320" y="22" width="220" height="62" rx="8"/>
+  <text class="node-title" x="430" y="49">Credential Manager</text>
+  <text class="node-title" x="430" y="68">Provider Backend</text>
+
+  <rect class="user-node" x="600" y="22" width="180" height="62" rx="31"/>
+  <text class="node-title" x="690" y="58">User</text>
+
+  <!-- External Entities (Left & Right) -->
+  <rect class="ext-node" x="20" y="224" width="155" height="60" rx="8"/>
+  <text class="node-title" x="97.5" y="259">Credential Issuer</text>
+
+  <rect class="ext-node" x="945" y="224" width="155" height="60" rx="8"/>
+  <text class="node-title" x="1022.5" y="259">Relying Party</text>
+
+  <!-- Internal Components inside User Device -->
+  <rect class="cmi-node" x="365" y="216" width="390" height="72" rx="8"/>
+  <text class="node-title" x="560" y="245">Credential Manager Instance</text>
+  <text class="node-sub" x="560" y="268">Credential Storage · Presentation Logic · Crypto Operations</text>
+
+  <rect class="int-node" x="415" y="366" width="290" height="62" rx="8"/>
+  <text class="node-title" x="560" y="393">Secure Cryptographic</text>
+  <text class="node-title" x="560" y="412">Application (SCA)</text>
+
+  <rect class="int-node" x="415" y="502" width="290" height="62" rx="8"/>
+  <text class="node-title" x="560" y="529">Secure Cryptographic</text>
+  <text class="node-title" x="560" y="548">Device (SCD)</text>
+
+  <!-- Directed Interface Connectors -->
+  <!-- Provider Interface: Backend -> CMI -->
+  <line class="edge" x1="430" y1="84" x2="430" y2="214" marker-end="url(#arrow)"/>
+  <rect class="lbl-bg" x="310" y="106" width="240" height="58" rx="5"/>
+  <text class="lbl-title" x="430" y="124">Provider Interface</text>
+  <text class="lbl-sub" x="430" y="141">Provisioning, Wallet Attestations,</text>
+  <text class="lbl-sub" x="430" y="156">Maintenance</text>
+
+  <!-- User Interface: User -> CMI -->
+  <line class="edge" x1="690" y1="84" x2="690" y2="214" marker-end="url(#arrow)"/>
+  <rect class="lbl-bg" x="595" y="113" width="190" height="44" rx="5"/>
+  <text class="lbl-title" x="690" y="131">User Interface</text>
+  <text class="lbl-sub" x="690" y="148">Display, Consent, Controls</text>
+
+  <!-- Issuance Interface: CMI -> Issuer -->
+  <line class="edge" x1="365" y1="262" x2="177" y2="262" marker-end="url(#arrow)"/>
+  <rect class="lbl-bg" x="186" y="206" width="144" height="42" rx="5"/>
+  <text class="lbl-title" x="258" y="224">Issuance Interface</text>
+  <text class="lbl-sub" x="258" y="240">OpenID4VCI</text>
+
+  <!-- Presentation Interface: CMI -> RP -->
+  <line class="edge" x1="755" y1="262" x2="943" y2="262" marker-end="url(#arrow)"/>
+  <rect class="lbl-bg" x="786" y="206" width="152" height="42" rx="5"/>
+  <text class="lbl-title" x="862" y="224">Presentation Interface</text>
+  <text class="lbl-sub" x="862" y="240">OpenID4VP / ISO 18013-5</text>
+
+  <!-- Secure Cryptographic Interface: CMI -> SCA -->
+  <line class="edge" x1="560" y1="288" x2="560" y2="364" marker-end="url(#arrow)"/>
+  <rect class="lbl-bg" x="450" y="311" width="220" height="28" rx="5"/>
+  <text class="lbl-title" x="560" y="329">Secure Cryptographic Interface</text>
+
+  <!-- SCA-SCD Interface: SCA -> SCD -->
+  <line class="edge" x1="560" y1="428" x2="560" y2="500" marker-end="url(#arrow)"/>
+  <rect class="lbl-bg" x="480" y="449" width="160" height="28" rx="5"/>
+  <text class="lbl-title" x="560" y="467">SCA–SCD Interface</text>
+</svg>

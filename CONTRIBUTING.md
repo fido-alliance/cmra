@@ -18,7 +18,7 @@ If you are not a member and would like to take part more directly, please goto o
 
 - **Search existing issues** to see if your feedback has already been raised. If it has, add a comment or a 👍 reaction instead of opening a duplicate.
 - **Check that you are looking at the latest version** of the architecture.
-- **Do not report security vulnerabilities in public issues.** See [Reporting Security Issues](#reporting-security-issues) below.
+- **Do not report security vulnerabilities in public issues.** Reach out to <help@fidoalliance.org> with the details.
 - **Do not include confidential or proprietary information** in your feedback. Everything posted in this repository is public.
 
 ## Types of Feedback We Welcome

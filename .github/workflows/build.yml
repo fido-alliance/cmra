@@ -1,0 +1,101 @@
+name: Build specs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      publish: ${{ steps.build.outputs.publish }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: true
+          token: ${{ secrets.RESOURCES_PAT }}
+          persist-credentials: false
+
+      - name: Show pinned commits
+        run: |
+          git rev-parse HEAD
+          git submodule status
+
+      ### Dependencies
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install Bikeshed
+        run: |
+          pip install bikeshed
+          bikeshed update
+
+      ### Build steps
+      # Prepares resources biblio combined with the entries from ./local-biblio.json
+      - name: Prepare biblio
+        run: node resources/github/scripts/merge-local-biblio.mjs
+
+      - name: Build HTML files
+        id: build
+        run: node resources/github/scripts/build.mjs
+
+      ### PDF Generation
+      # Needed for HTML to PDF conversion
+      - name: Install wkhtmltopdf
+        if: steps.build.outputs.pdf == 'true'
+        run: |
+          wget -q -P "$RUNNER_TEMP" https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+          sudo apt-get install -y "$RUNNER_TEMP"/wkhtmltox_0.12.6.1-3.jammy_amd64.deb
+          wkhtmltopdf --version
+
+      - name: Convert HTML to PDF
+        if: steps.build.outputs.pdf == 'true'
+        run: |
+          for html in output/*.html; do
+            wkhtmltopdf --enable-local-file-access \
+              --footer-font-size 9 --footer-center "[page]/[topage]" \
+              "$html" "${html%.html}.pdf"
+          done
+
+      ### Upload the specs as a workflow output
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.build.outputs.archive }}
+          path: output/
+          if-no-files-found: error
+
+      ### Build index for GitHub Pages
+      - name: Build index and stable links
+        if: steps.build.outputs.publish == 'true'
+        run: node resources/github/scripts/build-index.mjs
+
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.build.outputs.publish == 'true'
+        with:
+          path: pages/
+          retention-days: 1
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.publish == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

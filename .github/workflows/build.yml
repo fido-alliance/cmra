@@ -3,7 +3,8 @@ name: Build specs
 on:
   push:
     branches: [main]
-  pull_request:
+  pull_request_review:
+    types: [submitted]
   workflow_dispatch:
 
 permissions:
@@ -11,10 +12,11 @@ permissions:
 
 jobs:
   build:
+    if: github.event_name != 'pull_request_review' || github.event.review.state == 'approved'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      publish: ${{ steps.build.outputs.publish }}
+      deploy: ${{ steps.pages.outputs.deploy }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -71,20 +73,28 @@ jobs:
           path: output/
           if-no-files-found: error
 
-      ### Build index for GitHub Pages
+      ### Build index and archive for GitHub Pages
+      # We configured GitHub Pages deployment to only happen from pushes to the main branch
+      # .publish - value of the PUBLISH_PAGES set in the Makefile
+      # .deploy - computed boolean of whether publication is actually allowed given the configuration (event, branch etc).
+      - name: Check Pages deployment
+        id: pages
+        if: steps.build.outputs.publish == 'true' && github.event_name != 'pull_request_review' && github.ref == 'refs/heads/main'
+        run: echo "deploy=true" >> "$GITHUB_OUTPUT"
+
       - name: Build index and stable links
-        if: steps.build.outputs.publish == 'true'
+        if: steps.pages.outputs.deploy == 'true'
         run: node resources/github/scripts/build-index.mjs
 
       - uses: actions/upload-pages-artifact@v5
-        if: steps.build.outputs.publish == 'true'
+        if: steps.pages.outputs.deploy == 'true'
         with:
           path: pages/
           retention-days: 1
 
   deploy:
     needs: build
-    if: needs.build.outputs.publish == 'true' && github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    if: needs.build.outputs.deploy == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

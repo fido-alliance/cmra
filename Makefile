@@ -11,7 +11,7 @@ RELEASE_STATUS=wd
 
 # other options
 GENERATE_PDF=yes
-PUBLISH_PAGES=no
+PUBLISH_PAGES=yes
 
 include resources/build/release.mk
 include resources/build/deploy.mk
